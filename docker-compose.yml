@@ -9,6 +9,7 @@ services:
     volumes:
       - ./data:/opt/project/data
       - ./src:/opt/project/src
+      - ./conf:/opt/project/conf
   spark-worker:
     image: bitnami/spark:3.5
     depends_on: [spark-master]
@@ -18,3 +19,4 @@ services:
     volumes:
       - ./data:/opt/project/data
       - ./src:/opt/project/src
+      - ./conf:/opt/project/conf
