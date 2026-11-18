@@ -1,3 +1,43 @@
+# GlobalTech Industries : plateforme Big Data
+
+Projet du module Big Data et traitement massif (Hadoop, Spark), année 2026-2027.
+Date de rendu : **7 décembre 2026**.
+
+## Équipe et rôles
+
+Le groupe compte trois membres. Les quatre rôles proposés par l'énoncé sont répartis ainsi :
+
+| Membre | Rôle | Lots principaux |
+|---|---|---|
+| Franck Tague | Architecte plateforme et streaming | Lots 1, 2 et 5, volet HDFS du Lot 7 |
+| Sephora Tamko | Data engineer batch et performance | Lots 3, 4 et 6, volet Spark du Lot 7 |
+| Ornelle Kouaye | Responsable qualité et delivery | Lots 0, 8 et 9 |
+
+Le Lot 5 revient à la plateforme car le flux est lu depuis HDFS. Le Lot 6 revient au batch car il s'agit d'un calcul de chiffre d'affaires. Le Lot 7 est partagé entre son volet HDFS et son volet Spark.
+
+Chaque membre contribue à au moins deux lots. Chaque Pull Request est relue par un autre membre.
+## Planning
+
+| Période | Objectif | Jalon |
+|---|---|---|
+| 17 au 20 nov. | Cadrage, kit v3, cluster Docker opérationnel | J1 |
+| 21 au 26 nov. | HDFS et Bronze, Silver, début du streaming | J2 |
+| 27 nov. au 2 déc. | Gold, streaming, MapReduce contre Spark, tests et CI | J3 |
+| 3 au 5 déc. | Benchmark, panne d'un DataNode, erasure coding | J4 |
+| 6 et 7 déc. | Rapport, runbook, répétition de la soutenance | Rendu |
+
+Les dates officielles des jalons restent à confirmer par l'enseignante.
+
+## Organisation
+
+- Suivi des tâches : tableau GitHub Projects « GlobalTech Big Data »
+- Une branche par tâche, fusion dans `main` uniquement par Pull Request relue
+
+---
+
+
+
+
 # Squelette projet Big Data : GlobalTech Industries
 
 Le code initial ne contient volontairement pas la solution. Objectif : ingestion, couches bronze / silver / gold, analyses batch, streaming capteurs (voir l'énoncé).
