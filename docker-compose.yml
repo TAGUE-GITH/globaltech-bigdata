@@ -1,22 +1,107 @@
+# Cluster Hadoop du projet GlobalTech Industries
+# Étape 1 : HDFS (1 NameNode, 3 DataNodes)
+# Étape 2 : YARN (1 ResourceManager, 2 NodeManagers)
+# Étape 3 : Spark 3.5 (History Server et poste client)
+# Image officielle Apache, même version que les TP : Hadoop 3.5.0
+
+x-hadoop: &hadoop
+  image: apache/hadoop:3.5.0
+  env_file: ./hadoop.env
+  restart: unless-stopped
+
 services:
-  spark-master:
-    image: bitnami/spark:3.5
+
+  # Le chef de HDFS : il sait où se trouve chaque bloc de chaque fichier
+  namenode:
+    <<: *hadoop
+    container_name: namenode
+    hostname: namenode
+    command: ["hdfs", "namenode"]
     environment:
-      - SPARK_MODE=master
+      # Au premier démarrage, ce dossier n'existe pas : HDFS est formaté
+      ENSURE_NAMENODE_DIR: /tmp/hadoop-hadoop/dfs/name
     ports:
-      - "8080:8080"
-      - "7077:7077"
+      - "9870:9870"   # interface web de HDFS
     volumes:
-      - ./data:/opt/project/data
+      - ./data:/opt/project/data:ro
       - ./src:/opt/project/src
       - ./conf:/opt/project/conf
-  spark-worker:
-    image: bitnami/spark:3.5
-    depends_on: [spark-master]
+
+  # Les disques : ils stockent réellement les blocs
+  datanode1:
+    <<: *hadoop
+    container_name: datanode1
+    hostname: datanode1
+    command: ["hdfs", "datanode"]
+    depends_on: [namenode]
+
+  datanode2:
+    <<: *hadoop
+    container_name: datanode2
+    hostname: datanode2
+    command: ["hdfs", "datanode"]
+    depends_on: [namenode]
+
+  datanode3:
+    <<: *hadoop
+    container_name: datanode3
+    hostname: datanode3
+    command: ["hdfs", "datanode"]
+    depends_on: [namenode]
+
+  # Le chef de YARN : il distribue la mémoire et les cœurs aux traitements
+  resourcemanager:
+    <<: *hadoop
+    container_name: resourcemanager
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    depends_on: [namenode]
+    ports:
+      - "8088:8088"   # interface web de YARN
+
+  # Les ouvriers de YARN : ils exécutent les traitements
+  nodemanager1:
+    <<: *hadoop
+    container_name: nodemanager1
+    hostname: nodemanager1
+    command: ["yarn", "nodemanager"]
+    depends_on: [resourcemanager]
+
+  nodemanager2:
+    <<: *hadoop
+    container_name: nodemanager2
+    hostname: nodemanager2
+    command: ["yarn", "nodemanager"]
+    depends_on: [resourcemanager]
+
+  # L'historique des traitements Spark terminés
+  spark-history:
+    <<: *hadoop
+    image: globaltech/spark:3.5.9
+    build: ./docker/spark
+    container_name: spark-history
+    hostname: spark-history
+    # Crée le dossier des journaux dans HDFS s'il manque, puis lance le serveur
+    command: ["bash", "-c", "hdfs dfs -mkdir -p /spark-logs && hdfs dfs -chmod 1777 /spark-logs && exec spark-class org.apache.spark.deploy.history.HistoryServer"]
     environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
+      WAITFOR: namenode:8020
+    depends_on: [namenode]
+    ports:
+      - "18080:18080" # interface web du Spark History Server
+
+  # Le poste client : c'est d'ici que l'on lance les traitements avec spark-submit
+  spark-client:
+    <<: *hadoop
+    image: globaltech/spark:3.5.9
+    build: ./docker/spark
+    container_name: spark-client
+    hostname: spark-client
+    command: ["sleep", "infinity"]
+    depends_on: [resourcemanager, spark-history]
+    ports:
+      - "4040:4040"   # interface web du traitement Spark en cours
     volumes:
-      - ./data:/opt/project/data
+      - ./data:/opt/project/data:ro
       - ./src:/opt/project/src
       - ./conf:/opt/project/conf
+      - ./tools:/opt/project/tools
