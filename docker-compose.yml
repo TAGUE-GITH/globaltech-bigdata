@@ -36,6 +36,7 @@ services:
       - ./data:/opt/project/data:ro
       - ./src:/opt/project/src
       - ./conf:/opt/project/conf
+      - ./tools:/opt/project/tools
 
   # Les disques : ils stockent réellement les blocs
   datanode1:
