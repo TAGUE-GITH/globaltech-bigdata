@@ -1,8 +1,16 @@
 {
-  "app_name": "bigdata-student-project",
+  "app_name": "globaltech",
   "input_dir": "/opt/project/data/echantillon",
   "delivery": "J1",
-  "landing_dir_capteurs": "/tmp/landing/capteurs",
+  "datalake": "hdfs://namenode:8020/datalake",
+  "dates_livraison": {
+    "J1": "2026-02-01",
+    "J2": "2026-03-01",
+    "J3": "2026-04-01"
+  },
+  "sources_csv": ["commandes", "produits", "clients"],
+  "sources_texte": ["logs_web"],
+  "landing_dir_capteurs": "/datalake/landing/capteurs",
   "output_dir": "/opt/project/output",
   "shuffle_partitions": 8
 }
