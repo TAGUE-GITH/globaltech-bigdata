@@ -30,7 +30,18 @@ git clone https://github.com/TAGUE-GITH/globaltech-bigdata.git
 cd globaltech-bigdata
 ```
 
-Copier ensuite le dossier `skeleton/data/echantillon` du kit étudiant v3 dans le dossier `data/` du projet. Les données ne sont pas dans Git, le fichier `.gitignore` les exclut. On doit obtenir :
+Copier ensuite le dossier `skeleton/data/echantillon` du kit étudiant v3 dans le dossier `data/` du projet. Les données ne sont pas dans Git, le fichier `.gitignore` les exclut.
+
+Si le kit a été téléchargé et décompressé dans le dossier Téléchargements, ces deux commandes retrouvent le dossier `echantillon` et le copient au bon endroit :
+
+```powershell
+$src = Get-ChildItem "$HOME\Downloads" -Recurse -Directory -Filter echantillon | Select-Object -First 1
+Copy-Item -Recurse $src.FullName data\echantillon
+```
+
+Si la seconde commande signale une valeur `null`, le kit n'est pas décompressé : clic droit sur le fichier zip, puis *Extraire tout*.
+
+On doit obtenir :
 
 ```
 data/echantillon/J1/capteurs
@@ -84,7 +95,7 @@ Attendu : `Total Nodes:2`, avec `nodemanager1` et `nodemanager2` à l'état `RUN
 docker exec spark-client spark-submit tools/verif_cluster.py
 ```
 
-Attendu, au milieu des lignes `INFO` (durée : environ 25 secondes) :
+Pendant environ 25 secondes, de nombreuses lignes `INFO` défilent : c'est normal, Spark décrit chaque étape. Attendre le retour de l'invite `PS C:\...>`, puis remonter légèrement dans la fenêtre pour trouver le bloc suivant, situé au milieu des lignes `INFO` et non à la toute fin :
 
 ```
 Gestionnaire de ressources : yarn
@@ -102,6 +113,8 @@ Cluster OK
 - http://localhost:18080 : l'application `verif-cluster` dans la liste
 
 Si les trois vérifications passent, le cluster est opérationnel.
+
+Si `Cluster OK` n'apparaît pas, la vérification a échoué : remonter jusqu'à la première ligne contenant `Error` ou `Exception` et consulter la section 6.
 
 ## 5. Arrêter le cluster
 
@@ -129,6 +142,4 @@ Pour une pause entre deux séances de travail, utiliser `stop` puis `start`.
 
 Critère du projet : une personne extérieure relance le cluster **en moins de 10 minutes**, du clonage au message `Cluster OK`, prérequis déjà installés.
 
-| Date | Testeur | Poste (RAM, connexion) | Première fois ? | Durée | Résultat | Remarques |
-|---|---|---|---|---|---|---|
-| | | | | | | |
+| 20/11/2026 | Ornelle Kouaye | PC Windows, 16 Go | Non | 4 min 30 | Cluster OK | Copie des données non décrite (corrigé) |
