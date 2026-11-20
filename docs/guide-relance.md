@@ -142,4 +142,8 @@ Pour une pause entre deux séances de travail, utiliser `stop` puis `start`.
 
 Critère du projet : une personne extérieure relance le cluster **en moins de 10 minutes**, du clonage au message `Cluster OK`, prérequis déjà installés.
 
-| 20/11/2026 | Ornelle Kouaye | PC Windows, 16 Go | Non | 4 min 30 | Cluster OK | Copie des données non décrite (corrigé) |
+| Date | Testeur | Poste | Première fois ? | Durée | Résultat | Remarques |
+|---|---|---|---|---|---|---|
+| 20/11/2026 | Ornelle Kouaye | PC Windows | Oui, téléchargement des images compris | 6 min | Cluster OK | Copie des données et repérage de « Cluster OK » non décrits : corrigé dans cette version |
+
+Résultat : **6 minutes pour une première installation**, téléchargements compris, soit sous l'objectif de 10 minutes. Une relance ultérieure, avec les images déjà en cache, prend environ 2 minutes (démarrage et vérification).
