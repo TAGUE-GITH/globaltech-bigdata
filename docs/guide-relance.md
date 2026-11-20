@@ -122,9 +122,10 @@ Si `Cluster OK` n'apparaît pas, la vérification a échoué : remonter jusqu'à
 |---|---|---|
 | `docker compose stop` | Met les conteneurs en pause | **conservées** |
 | `docker compose start` | Redémarre les conteneurs arrêtés | conservées |
-| `docker compose down` | Supprime les conteneurs | **perdues** : HDFS est reformaté au prochain démarrage |
+| `docker compose down` | Supprime les conteneurs | **conservées** dans les volumes Docker |
+| `docker compose down -v` | Supprime les conteneurs **et les volumes** | **perdues** : HDFS est reformaté, vide, au prochain démarrage |
 
-Pour une pause entre deux séances de travail, utiliser `stop` puis `start`.
+Les données de HDFS sont stockées dans quatre volumes Docker (`hdfs-namenode`, `hdfs-datanode1` à `3`), indépendants des conteneurs. On ne réserve `down -v` qu'aux cas où l'on veut repartir d'un HDFS vide, par exemple après une erreur de configuration.
 
 ## 6. Problèmes fréquents
 
@@ -137,6 +138,7 @@ Pour une pause entre deux séances de travail, utiliser `stop` puis `start`.
 | `Live datanodes (0)` juste après le démarrage | Les DataNodes s'inscrivent encore | Attendre 30 secondes et relancer la commande |
 | Un traitement Spark reste à l'état `ACCEPTED` | Mémoire YARN insuffisante, ou un autre traitement l'occupe | Vérifier sur http://localhost:8088 qu'aucune autre application ne tourne |
 | Un conteneur est à l'état `Exited` | Erreur au démarrage | `docker compose logs <nom du conteneur>` pour lire l'erreur |
+| `Live datanodes (0)` durablement, et `Incompatible clusterIDs` dans `docker compose logs datanode1` | Le volume du NameNode a été effacé mais pas ceux des DataNodes : ils appartiennent à un ancien HDFS | `docker compose down -v`, puis `docker compose up -d` (HDFS repart vide) |
 
 ## 7. Validation par un tiers
 

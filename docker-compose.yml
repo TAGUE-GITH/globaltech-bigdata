@@ -2,6 +2,7 @@
 # Étape 1 : HDFS (1 NameNode, 3 DataNodes)
 # Étape 2 : YARN (1 ResourceManager, 2 NodeManagers)
 # Étape 3 : Spark 3.5 (History Server et poste client)
+# Lot 2   : données HDFS conservées dans des volumes Docker
 # Image officielle Apache, même version que les TP : Hadoop 3.5.0
 
 x-hadoop: &hadoop
@@ -9,45 +10,60 @@ x-hadoop: &hadoop
   env_file: ./hadoop.env
   restart: unless-stopped
 
+# Services HDFS : l'image officielle plus les dossiers de stockage
+# appartenant à l'utilisateur hadoop (voir docker/hadoop/Dockerfile)
+x-hdfs: &hdfs
+  <<: *hadoop
+  image: globaltech/hadoop:3.5.0
+  build: ./docker/hadoop
+
 services:
 
   # Le chef de HDFS : il sait où se trouve chaque bloc de chaque fichier
   namenode:
-    <<: *hadoop
+    <<: *hdfs
     container_name: namenode
     hostname: namenode
     command: ["hdfs", "namenode"]
     environment:
-      # Au premier démarrage, ce dossier n'existe pas : HDFS est formaté
-      ENSURE_NAMENODE_DIR: /tmp/hadoop-hadoop/dfs/name
+      # Au tout premier démarrage, ce dossier n'existe pas : HDFS est formaté.
+      # Ensuite, il est dans le volume : HDFS repart avec ses données.
+      ENSURE_NAMENODE_DIR: /data/namenode/current
     ports:
       - "9870:9870"   # interface web de HDFS
     volumes:
+      - hdfs-namenode:/data/namenode
       - ./data:/opt/project/data:ro
       - ./src:/opt/project/src
       - ./conf:/opt/project/conf
 
   # Les disques : ils stockent réellement les blocs
   datanode1:
-    <<: *hadoop
+    <<: *hdfs
     container_name: datanode1
     hostname: datanode1
     command: ["hdfs", "datanode"]
     depends_on: [namenode]
+    volumes:
+      - hdfs-datanode1:/data/datanode
 
   datanode2:
-    <<: *hadoop
+    <<: *hdfs
     container_name: datanode2
     hostname: datanode2
     command: ["hdfs", "datanode"]
     depends_on: [namenode]
+    volumes:
+      - hdfs-datanode2:/data/datanode
 
   datanode3:
-    <<: *hadoop
+    <<: *hdfs
     container_name: datanode3
     hostname: datanode3
     command: ["hdfs", "datanode"]
     depends_on: [namenode]
+    volumes:
+      - hdfs-datanode3:/data/datanode
 
   # Le chef de YARN : il distribue la mémoire et les cœurs aux traitements
   resourcemanager:
@@ -105,3 +121,11 @@ services:
       - ./src:/opt/project/src
       - ./conf:/opt/project/conf
       - ./tools:/opt/project/tools
+
+# Volumes Docker : les données de HDFS survivent à « docker compose down ».
+# Seul « docker compose down -v » les efface.
+volumes:
+  hdfs-namenode:
+  hdfs-datanode1:
+  hdfs-datanode2:
+  hdfs-datanode3:
