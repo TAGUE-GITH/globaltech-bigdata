@@ -1,0 +1,6 @@
+# Les scripts exécutés dans les conteneurs Linux doivent garder des fins de ligne Unix (LF),
+# même quand Git les récupère sur Windows. Sinon bash échoue avec « $'\r': command not found ».
+*.sh   text eol=lf
+*.py   text eol=lf
+*.env  text eol=lf
+Dockerfile text eol=lf
