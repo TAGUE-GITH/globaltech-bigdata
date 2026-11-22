@@ -107,6 +107,46 @@ Une jointure ou une agrégation par `product_id` enverra un quart des données �
 |---|---|---|
 | Lignes JSON tronquées | 27 | Écartées par le streaming (Lot 5), à compter |
 
+## Décisions de l'équipe
+
+Trois cas n'avaient pas de réponse évidente. Décisions prises par l'équipe le 22/11/2026, avec leur justification.
+
+### 1. Commandes datées de décembre 2025 dans la livraison de janvier (490 lignes) : **garder**
+
+Ce sont traitées comme des commandes enregistrées en retard dans l'export de janvier. Leurs dates sont réalistes (du 24 au 31 décembre, juste avant la période livrée) et le reste de leurs colonnes ne présente pas d'anomalie particulière. Les rejeter retirerait du chiffre d'affaires des ventes qui ont probablement eu lieu. Elles comptent dans le chiffre d'affaires de décembre 2025, selon leur `order_ts`.
+
+Les dates franchement incohérentes (année 2030, valeur `hier`) restent rejetées.
+
+### 2. Commandes sans pays (108 lignes) : **déduire le pays de l'entrepôt**
+
+Le code de l'entrepôt contient un pays (`WH-FR-01` → `FR`). Vérification sur toutes les commandes de J1 avant de décider :
+
+| Mesure | Résultat |
+|---|---|
+| Commandes avec un pays renseigné | 100 635 |
+| … dont le pays de l'entrepôt est égal au pays de livraison | 100 635 (100 %) |
+| Commandes sans pays dont l'entrepôt est lisible | 108 sur 108 |
+
+Dans les données reçues, l'entrepôt donne toujours le pays de livraison : la déduction est fiable. Le Silver gardera une colonne indiquant que le pays a été déduit, pour la traçabilité. La règle sera revérifiée sur J2 et J3 : si une commande y est livrée dans un autre pays que celui de son entrepôt, la déduction ne sera plus appliquée.
+
+### 3. Même commande avec deux statuts différents (199 commandes) : **garder le statut le plus avancé**
+
+Pour ces 199 commandes, toutes les autres colonnes sont identiques : seul le statut change. On l'interprète comme deux étapes de la vie de la même commande. On garde une seule ligne, celle du statut le plus avancé ; l'autre compte comme doublon.
+
+Combinaisons rencontrées dans J1 :
+
+| Statuts présents | Commandes | Statut gardé |
+|---|---|---|
+| `SHIPPED` + `RETURNED` | 10 | `RETURNED` (décision de l'équipe) |
+| `COMPLETED` + `RETURNED` | 75 | `RETURNED` |
+| `CANCELLED` + `COMPLETED` | 105 | `CANCELLED` |
+| `CANCELLED` + `SHIPPED` | 6 | `CANCELLED` |
+| `CANCELLED` + `RETURNED` | 3 | `CANCELLED` |
+
+Ordre retenu, du moins avancé au plus avancé : `SHIPPED` < `COMPLETED` < `RETURNED` < `CANCELLED`.
+
+L'équipe a d'abord tranché le cas `SHIPPED` + `RETURNED`. L'exploration a révélé ensuite 105 cas `CANCELLED` + `COMPLETED`, que cette première décision ne couvrait pas. L'équipe a décidé de faire passer l'annulation en dernier, **par prudence** : le chiffre d'affaires exclut les commandes annulées, et en cas de doute, mieux vaut ne pas compter une vente que compter une vente qui a été annulée.
+
 ## Ce que l'on ne sait pas encore
 
 - L'échantillon contient-il toutes les anomalies des vraies livraisons ? À revérifier sur J1 complet, en relançant le même programme.
