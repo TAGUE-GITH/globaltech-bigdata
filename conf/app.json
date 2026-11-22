@@ -10,6 +10,7 @@
   },
   "sources_csv": ["commandes", "produits", "clients"],
   "sources_texte": ["logs_web"],
+  "sel_pseudonymisation": "globaltech-2026-projet-etudiant",
   "landing_dir_capteurs": "/datalake/landing/capteurs",
   "output_dir": "/opt/project/output",
   "shuffle_partitions": 8
